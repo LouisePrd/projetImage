@@ -1,20 +1,38 @@
+	import java.io.BufferedWriter;
 	import java.io.File;
+	import java.io.FileWriter;
 	import java.io.IOException;
 	import java.util.ArrayList;
 	import java.util.Collections;
-	import java.util.Set;
-	import java.util.TreeMap;
+	import java.util.Comparator;
+	import java.util.HashMap;
+	import java.util.LinkedHashMap;
+	import java.util.LinkedList;
+	import java.util.List;
+	import java.util.Map;
+	import java.util.Map.Entry;
+	import java.util.Scanner;
 	import fr.unistra.pelican.Image;
 	import fr.unistra.pelican.algorithms.io.ImageLoader;
 
 public class Prototype {
 
 		public static void main(String[] args) throws IOException {
-			//Viewer2D.exec(imgDebruite);
-        	Image imgFiltree = filtreMedian(ImageLoader.exec("C:\\Users\\Louise\\Desktop\\DUT info\\broad\\0001.png"));
+			
+        	Image imgFiltree = filtreMedian(ImageLoader.exec("C:\\Users\\Louise\\Desktop\\DUT info\\broad\\0003.png"));
         	double[][] histo1 = histogrammeNormalisation(histogrammeDiscretion(histogrammeImage(imgFiltree), imgFiltree), imgFiltree.getXDim() * imgFiltree.getYDim());
-			recherche(imgFiltree.getName(), histo1);
+        	
+        	//PARTIE 1
+			//recherche("C:\\Users\\Louise\\Desktop\\DUT info\\broad\\", "0003.png" , histo1);
+			
+			//PARTIE 2
+			//preTraitement("C:\\Users\\Louise\\Desktop\\DUT info\\broad\\");
+			rechercheV2(histo1);
 		}
+		
+		
+		
+		//PARTIE 1
 		
 		public static Image chargerImage(String s) {
 			Image test= ImageLoader.exec(s);
@@ -90,21 +108,21 @@ public class Prototype {
 		}
 		
 		
-		public static void recherche(String imgComparee, double[][] histo1) throws IOException {
-			TreeMap<String, Double> map = new TreeMap<String,Double>();
-			String url = "C:\\Users\\Louise\\Desktop\\DUT info\\broad\\";
+		public static void recherche(String url, String imgComparee, double[][] histo1) throws IOException {
+			Map<String, Double> map = new HashMap<String, Double>();
 			File dir  = new File(url);
-	        File[] liste = dir.listFiles();
-	        	for(File item : liste){ //parcourt du fichier
-	        		if(item.isFile()) {
-		                   if(!item.getName().equals(imgComparee)) {
-		    		            Image imgFiltree2 = filtreMedian(ImageLoader.exec(url + imgComparee));
-		    		            double[][] histo2 = histogrammeNormalisation(histogrammeDiscretion(histogrammeImage(imgFiltree2), imgFiltree2), imgFiltree2.getXDim() * imgFiltree2.getYDim());
-		    		            map.put(item.getName(), calculSimilarite(histo1,histo2));
-		                    }
-		            	}
-	        		}
-	        	System.out.println("Lowest Entry is: " + map.firstEntry()); 
+	        	for(File item : dir.listFiles()){ //parcourt du fichier
+	        		if(!item.getName().equals(imgComparee)) {
+	        			Image imgFiltree2 = filtreMedian(ImageLoader.exec(url + item.getName()));
+		    		    double[][] histo2 = histogrammeNormalisation(histogrammeDiscretion(histogrammeImage(imgFiltree2), imgFiltree2), imgFiltree2.getXDim() * imgFiltree2.getYDim());
+		    		    map.put(item.getName(), calculSimilarite(histo1,histo2));
+		             }
+		        }
+	        	Map<String, Double> mapSort = sortByValue(map);
+	        	List keys = new ArrayList(mapSort.keySet());
+	        	for (int i = 0; i < 10; i++) {
+	        	    System.out.println(keys.get(i));
+	        	} //affiche les noms des 10 images les + similaires
 		}
 		
 		
@@ -115,7 +133,92 @@ public class Prototype {
 			}
 			return Math.sqrt(calcul);
 		}
+		
+		//tri de la map par ordre croissant
+		 public static HashMap<String, Double> sortByValue(Map<String, Double> map) {
+		        List<Entry<String, Double>> list = new LinkedList<Map.Entry<String, Double> >(map.entrySet());
+		 
+		        Collections.sort(list, new Comparator<Map.Entry<String, Double> >() {
+		            public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
+		                return (o1.getValue()).compareTo(o2.getValue());
+		            }
+		        });
+		         
+		        HashMap<String, Double> temp = new LinkedHashMap<String, Double>();
+		        	for (Entry<String, Double> aa : list) {
+		        		temp.put(aa.getKey(), aa.getValue());
+		        	}
+		        return temp;
+		}
+		 
+		 
+		 
+		 //PARTIE 2
+		 
+		 //Fonction de prétraitement qui va écrire dans un nv txt l'histogramme
+		 public static void preTraitement(String url) throws IOException {
+			 File dir  = new File(url);
+			 int numPhoto = 0;
+	        	for(File item : dir.listFiles()){ //parcourt du fichier
+	        		Image imgFiltree = filtreMedian(ImageLoader.exec(url + item.getName()));
+	        		double[][] histo1 = histogrammeNormalisation(histogrammeDiscretion(histogrammeImage(imgFiltree), imgFiltree), imgFiltree.getXDim() * imgFiltree.getYDim());
+	        		FileWriter fw = new FileWriter("C:\\Users\\Louise\\Desktop\\DUT info\\BD\\" + numPhoto++ + ".txt");
+	        		BufferedWriter bw = new BufferedWriter(fw);
+	        		for (int i=1; i<128; i++) {
+	    				double val1 = histo1[0][i];
+	    				String v = Double.toString(val1);
+	    				bw.write(v + "\n");
+	        		}
+	        		bw.close();
+	        	}
+	        	System.out.println("fin du prétraitement");	
+		 }
+		 
+
+		 //fonction de recherche qui va utiliser les txt créés précedemment
+		 //problème : ne fonctionne que sur 1 histogramme donc distance euclidienne pas correcte
+		 public static void rechercheV2(double[][] histo1) throws IOException {
+				double calcul = 0;
+			 	Map<String, Double> map = new HashMap<String, Double>();
+				String url = "C:\\Users\\Louise\\Desktop\\DUT info\\BD\\";
+				File dir  = new File(url);
+		        	for(File item : dir.listFiles()){ //parcourt du fichier
+		        		int index = 0;
+		        		Scanner obj = new Scanner(item);
+		        		while (obj.hasNextLine()) {
+		        			++index;
+		        			String val = obj.nextLine();
+		        			double doubleValue = Double.parseDouble(val);
+							calcul += (Math.pow((histo1[0][index] - doubleValue), 2));
+							map.put(item.getName(), calcul);
+		        		}
+		        	}
+		        
+		        //puis tri des valeurs comme pour la partie 1
+		        Map<String, Double> mapSort = sortByValue(map);
+		        List keys = new ArrayList(mapSort.keySet());
+		        for (int i = 0; i < 10; i++) {
+		        	System.out.println(keys.get(i));
+		        }	
+		 }
+		 
+		 
+		//PARTIE 3
+		
+		//On souhaite reprendre la partie 1 avec cette fois des histogrammes avec des HSV
+		public static double[][] histogrammeHSV(Image img) throws IOException {
+				double[][] tab = new double[3][256];
+				for (int i = 0; i < img.getXDim()-1 ; i++) {
+					for (int j = 0; j < img.getYDim()-1 ;j++) {
+						int r = img.getPixelXYBByte(i, j, 0);
+						tab[0][r] += 1;
+						int g = img.getPixelXYBByte(i, j, 1);
+						tab[1][g] += 1;
+						int b = img.getPixelXYBByte(i, j, 2);
+						tab[2][b] += 1;
+					}
+				}
+				return tab;
+			}
+		
 }
- 
-
-
