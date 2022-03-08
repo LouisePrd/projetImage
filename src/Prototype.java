@@ -27,7 +27,10 @@ public class Prototype {
 			
 			//PARTIE 2
 			//preTraitement("C:\\Users\\Louise\\Desktop\\DUT info\\broad\\");
-			rechercheV2(histo1);
+			//rechercheV2(histo1);
+			
+			//PARTIE 3
+        	//histogrammeHSV(imgFiltree);
 		}
 		
 		
@@ -206,19 +209,57 @@ public class Prototype {
 		//PARTIE 3
 		
 		//On souhaite reprendre la partie 1 avec cette fois des histogrammes avec des HSV
-		public static double[][] histogrammeHSV(Image img) throws IOException {
-				double[][] tab = new double[3][256];
+		public static void histogrammeHSV(Image img) throws IOException {
+
+				double[][] tabH = new double[1][360];
+				double[][] tabVS = new double[2][1];
+				
 				for (int i = 0; i < img.getXDim()-1 ; i++) {
 					for (int j = 0; j < img.getYDim()-1 ;j++) {
+						
+						//on récupère les valeurs de r g et b pour chaque pixel
 						int r = img.getPixelXYBByte(i, j, 0);
-						tab[0][r] += 1;
 						int g = img.getPixelXYBByte(i, j, 1);
-						tab[1][g] += 1;
 						int b = img.getPixelXYBByte(i, j, 2);
-						tab[2][b] += 1;
+						
+						//on cherche M tel que M = max{R, G, B}
+						double[] tabMax = {r, g, b};
+						double max = 0;
+					    	for (int k=0 ; k< 3 ; k++){
+					    		if(tabMax[k]>max){
+					    			max=tabMax[k];}
+					    	}
+					   //Et m tel que m = min{R, G, B}
+					   double min = 0;
+					   		for (int k=0 ; k< 3 ; k++){
+					   			if(tabMax[k]<max){
+					   				max=tabMax[k];}
+						    }
+					   		
+					  //Définition de V et S en fonction des équations
+					  double V = max/255;
+					  if(max>0) {
+						  double S = 1-(min/max);
+						  tabVS[2][(int) S]  += 1;
+					  }  
+					  else {
+						  double S = 1-(min/max);
+						  tabVS[2][(int) S]  += 1;
+					  }
+					  
+					  //on remplit le premier histogramme avec V
+					  tabVS[1][(int) V] += 1;
+					  
+					  
+					  //on a S et V, maintenant on calcule H
+					  if (g >= b) {
+						  double H = Math.sqrt(Math.pow(r,2) + Math.pow(g,2) + Math.pow(b,2) - r*g - r*b - g*b);
+					  }
+					  else {
+						  
+					  }
+					  
 					}
 				}
-				return tab;
-			}
-		
+	}
 }
