@@ -25,11 +25,11 @@ public class Prototype {
         	//PARTIE 1
 			//recherche("C:\\Users\\Louise\\Desktop\\DUT info\\broad\\", "0003.png" , histo1);
 			
-			//PARTIE 2
+		//PARTIE 2
 			//preTraitement("C:\\Users\\Louise\\Desktop\\DUT info\\broad\\");
 			//rechercheV2(histo1);
 			
-			//PARTIE 3
+		//PARTIE 3
         	//histogrammeHSV(imgFiltree);
 		}
 		
@@ -209,6 +209,7 @@ public class Prototype {
 		//PARTIE 3
 		
 		//On souhaite reprendre la partie 1 avec cette fois des histogrammes avec des HSV
+		//Pas terminée : début de protoype seulement, calcule pas complet
 		public static void histogrammeHSV(Image img) throws IOException {
 
 				double[][] tabH = new double[1][360];
@@ -256,7 +257,7 @@ public class Prototype {
 						  double H = Math.sqrt(Math.pow(r,2) + Math.pow(g,2) + Math.pow(b,2) - r*g - r*b - g*b);
 					  }
 					  else {
-						  
+						 //à finir
 					  }
 					  
 					}
