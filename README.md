@@ -1,4 +1,4 @@
-# projetImage
+# recherche-Image
 Sujet de projet : 
 Recherche d’images par le contenutype google image 
 Utilisation de PELICAN pour la manipulation d'images
